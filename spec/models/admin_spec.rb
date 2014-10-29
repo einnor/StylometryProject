@@ -17,8 +17,21 @@
 #  updated_at             :datetime
 #
 
-require 'rails_helper'
+require 'spec_helper'
 
 RSpec.describe Admin, :type => :model do
-  pending "add some examples to (or delete) #{__FILE__}"
+  
+  before(:each) do
+    @admin = FactoryGirl.build(:admin)
+  end
+  
+  
+  #it "has a valid factory" do
+  #  @admin.should be_valid
+  #end
+  it "is invalid without an email" do
+    @admin.email = nil
+    @admin.should_not be_valid
+  end
+  
 end
