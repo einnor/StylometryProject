@@ -1,4 +1,40 @@
 Rails.application.routes.draw do
+  get 'sources/index'
+
+  get 'sources/new'
+
+  get 'sources/show'
+
+  get 'sources/create'
+
+  get 'sources/edit'
+
+  get 'sources/update'
+
+  get 'students/index'
+
+  get 'students/new'
+
+  get 'students/show'
+
+  get 'students/create'
+
+  get 'students/edit'
+
+  get 'students/update'
+
+  get 'source/index'
+
+  get 'source/new'
+
+  get 'source/show'
+
+  get 'source/create'
+
+  get 'source/edit'
+
+  get 'source/update'
+
   get 'pages/home'
 
   get 'pages/about'

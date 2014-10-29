@@ -45,6 +45,8 @@ gem 'ai4r', '~> 1.13'
 
 gem 'annotate', '~> 2.6.5'
 
+gem 'carrierwave', '~> 0.10.0'
+
 
 # Use PostgreSQL Database
 group :production do
