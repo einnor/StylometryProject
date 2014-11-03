@@ -1,2 +1,45 @@
-<h1>Students#edit</h1>
-<p>Find me in app/views/students/edit.html.erb</p>
+<div class="row">
+  <div class="col-md-3 skin-white">
+    
+  </div>
+  
+  <div class="col-md-6 skin-white">
+    <%= form_for(@student, :html => {:multipart => true}) do |f| %>
+      <% if @student.errors.any? %>
+        <div id="error_explanation">
+          <h2><%= pluralize(@student.errors.count, "error") %> prohibited this student from being saved:</h2>
+    
+          <ul>
+          <% @student.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+          </ul>
+        </div>
+      <% end %>
+    
+      <div class="field">
+        <%= f.label :name %><br>
+        <%= f.text_field :name %>
+      </div>
+      <div class="field"><%= f.label :source %> <br />
+        <%= f.select(:source_id, @source_options) %>
+      </div>
+      
+      <div class="field"><%= f.label :essay %> <br />
+        <%= f.file_field :essay %>
+      </div>
+      
+      <br />
+      
+      <div class="actions">
+        <%= f.submit "Submit", :class=>"btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+  
+  <div class="col-md-3 skin-white">
+    
+  </div>
+</div>
+
+

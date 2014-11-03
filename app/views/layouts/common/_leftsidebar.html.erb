@@ -1,6 +1,21 @@
 <% if admin_signed_in? %>
-  Left side bar goes here. <br />
-  Student information. <br />
-  Extracted information. <br />
-  Results of the analysis.
+  
+  
+  <div class="span2">  
+    <ul class="nav nav-pills nav-stacked">  
+      <li class="active">  
+        <a href="#">System Menu</a>
+      </li>
+      <li>
+        <%= link_to "Register Source", new_source_path %>
+      </li>
+      <li>
+        <%= link_to "Register Student", new_student_path %>
+      </li>
+      <li>
+        <%= link_to "Evaluate an Essay", "#" %>
+      </li>
+      <li><a href="#">. . . . .</a></li>   
+    </ul>  
+  </div> 
 <% end %>

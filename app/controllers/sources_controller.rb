@@ -1,4 +1,7 @@
 class SourcesController < ApplicationController
+  
+  before_action :set_source, only: [:show, :edit, :update, :destroy]
+  
   def index
     @sources = Source.all
   end
@@ -53,6 +56,11 @@ class SourcesController < ApplicationController
   end
   
   private
+  
+  # Use callbacks to share common setup or constraints between actions.
+    def set_source
+      @source = Source.find(params[:id])
+    end
   
   def source_params
     #code

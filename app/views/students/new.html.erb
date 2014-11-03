@@ -1,2 +1,86 @@
-<h1>Students#new</h1>
-<p>Find me in app/views/students/new.html.erb</p>
+<div class="row">
+  <div class="col-md-3 skin-white">
+    <% if admin_signed_in? %>
+  
+  
+      <div class="span2">  
+        <ul class="nav nav-pills nav-stacked">  
+          <li>
+            <%= link_to "Home", root_url %>
+          </li>
+          <li>
+            <%= link_to "Register Source", new_source_path %>
+          </li>
+          <li class="active">
+            <%= link_to "Register Student", new_student_path %>
+          </li>
+          <li>
+            <%= link_to "View Students", students_path %>
+          </li>
+          <li>
+            <%= link_to "View Sources", sources_path %>
+          </li>
+          <li>
+            <%= link_to "Evaluate an Essay", "#" %>
+          </li>
+          <li><a href="#">. . . . .</a></li>   
+        </ul>  
+      </div> 
+    <% end %>
+  </div>
+  
+  <div class="col-md-6 skin-white">
+    <div class="header">New Student</div>
+    
+    <%= form_for(@student, :html => {:multipart => true}) do |f| %>
+    
+    <% if @student.errors.any? %>
+      <div id="error_explanation">
+        <h2>
+          <%= pluralize(@student.errors.count, "error") %> prohibited this student from being saved:
+        </h2>
+        <ul>
+          <%= student.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>  
+    <% end %>
+    
+    <div class="body">
+      
+      <div class="field"><%= f.label :name %><br />
+        <%= f.text_field :name, autofocus: true %>
+      </div>
+    
+      <div class="field"><%= f.label :source %> <br />
+        <%= f.select(:source_id, @source_options) %>
+      </div>
+      
+      <div class="field"><%= f.label :essay %> <br />
+        <%= f.file_field :essay %>
+      </div>
+      
+      <br />
+      
+      <div class="actions">
+        <%= f.submit "Submit", :class=>"btn btn-primary" %>
+      </div>
+    <% end %>
+  
+    </div>
+  </div>
+  
+  <div class="col-md-3 skin-white">
+    
+  </div>
+</div>
+
+
+
+
+
+
+
+
+  

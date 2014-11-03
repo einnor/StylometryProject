@@ -1,2 +1,20 @@
-<h1>Sources#show</h1>
-<p>Find me in app/views/sources/show.html.erb</p>
+<div class="row">
+  <div class="col-md-3 skin-white">
+    
+  </div>
+  
+  <div class="col-md-6 skin-white">
+
+      Name : <%= @source.name %> <br />
+      Url : <%= @source.url %> <br />
+      Created on : <%= @source.created_at.strftime("%d/%m/%Y at %I:%M%p")%><br />
+      <%= link_to "Edit", edit_source_path %> |
+      <%= link_to "Delete", source, method: :delete, data: { confirm: 'Are you sure?' } %>
+      <hr>
+
+  </div>
+  
+  <div class="col-md-3 skin-white">
+    
+  </div>
+</div>
