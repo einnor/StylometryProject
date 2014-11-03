@@ -1,8 +1,56 @@
-<p class="navbar-text pull-right">
-<% if admin_signed_in? %>
-  Logged in as <strong><%= current_admin.email %></strong>.
-  <%= link_to 'Edit profile', edit_admin_registration_path, :class => 'navbar-link' %> |
-  <%= link_to "Logout", destroy_admin_session_path, method: :delete, :class => 'navbar-link'  %>
-<% else %>
-  <%= link_to "Login", new_admin_session_path, :class => 'navbar-link'  %>
-<% end %>
+
+<nav class="navbar navbar-default" role="navigation">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      
+      <%= link_to("StylometryProject", root_url, :class => "navbar-brand") %>
+
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+          <%= link_to("Home", root_url) %>
+        </li>
+        <li>
+          <%= link_to("About", pages_about_path) %>
+        </li>
+        <li>
+          <%= link_to("Contacts", pages_contactUS_path) %>
+        </li>
+        
+        <% if admin_signed_in? %>
+          
+          <li class="dropdown user user-menu">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+              <span><%= current_admin.email %><i class="caret"></i></span>
+            </a>
+            <ul class="dropdown-menu" role="menu">
+              <li>
+                <%= link_to 'Edit profile', edit_admin_registration_path, :class => 'navbar-link' %>
+              </li>
+              <li>
+                <%= link_to "Logout", destroy_admin_session_path, method: :delete, :class => 'navbar-link' %>
+              </li>
+              <li><a href="#">Something else here</a></li>
+              <li class="divider"></li>
+              <li><a href="#">Separated link</a></li>
+            </ul>
+          </li>
+          
+        <% end %>
+        
+        
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>

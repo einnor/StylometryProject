@@ -17,7 +17,7 @@ RSpec.describe SourcesController, :type => :controller do
   end
 
   describe "GET show" do
-    it "returns http success" do
+    it "returns http 200" do
       get :show
       expect(response).to have_http_status(:success)
     end
