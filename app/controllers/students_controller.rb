@@ -18,9 +18,19 @@ class StudentsController < ApplicationController
   def create
     #@student.source_id = @source.id
     @student = Student.new(student_params)
+    
+    
+    
+    
     respond_to do |format|
       if @student.save
-        #code
+        
+        # code to read the essay file
+        # Currently only works with .txt files
+        file = @student
+        essay_file = file.essay.read
+        
+        
         format.html{redirect_to @student, notice: 'Student was successfully created.'}
         format.json{render :show, status: :created, location: @student}
       else
@@ -31,6 +41,7 @@ class StudentsController < ApplicationController
   end
 
   def edit
+    @source_options = Source.all.map{|s| [s.name, s.id]}
   end
 
   def update
@@ -39,7 +50,7 @@ class StudentsController < ApplicationController
     respond_to do |format|
       if @student.save
         #code
-        format.html{redirect_to @student, notice: 'Student was successfully created.'}
+        format.html{redirect_to @student, notice: 'Student was successfully updated.'}
         format.json{render :show, status: :created, location: @student}
       else
         format.html{render :new}
@@ -52,7 +63,7 @@ class StudentsController < ApplicationController
     #code
     @student.destroy
     respond_to do |format|
-      format.html{redirect_to student_url, notice: 'Student was successfully deleted.'}
+      format.html{redirect_to students_url, notice: 'Student was successfully deleted.'}
       format.json{head :no_content}
     end
   end
@@ -71,7 +82,7 @@ class StudentsController < ApplicationController
   
   def student_params
     #code
-    params.require(:source).permit(:source_id, :name, :essay)
+    params.require(:student).permit(:source_id, :name, :essay)
   end
   
 end

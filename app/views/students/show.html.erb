@@ -6,10 +6,10 @@
   <div class="col-md-6 skin-white">
 
       Name : <%= @student.name %> <br />
-      Url : <%= @student.source.name %> <br />
+      Source : <%= @student.source.name %> <br />
       Created on : <%= @student.created_at.strftime("%d/%m/%Y at %I:%M%p")%><br />
       <%= link_to "Edit", edit_student_path %> |
-      <%= link_to "Delete", student, method: :delete, data: { confirm: 'Are you sure?' } %>
+      <%= link_to "Delete", "#" %>
       <hr>
 
   </div>
