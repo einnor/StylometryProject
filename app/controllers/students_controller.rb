@@ -95,14 +95,17 @@ class StudentsController < ApplicationController
     
     # Create CSV headers
     # Populate it with the classifiers
-    csv_headers = %w(the of at i)
+    #csv_headers = %w(the of at i)
+    
+    file = (File.read(Rails.root.join('app','models','concerns','classifiers.csv').to_s))
+    @csv_headers = file.split(" ")
     
     # Create a file with a path and unique name
     #path = "app/views/csv_files/" + @student.name.to_s + ".csv"
     #my_csv_file = File.open(path, "w+")
     
-    @csv = CSV.open(Rails.root.join('app','models','csv_files', @student.name.to_s + ".csv").to_s, "wb") do |csv|
-      csv << csv_headers
+    CSV.open(Rails.root.join('app','models','csv_files', @student.name.to_s + ".csv").to_s, "wb") do |csv|
+      csv << @csv_headers
     end
     
     
