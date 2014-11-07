@@ -1,6 +1,6 @@
 class StudentsController < ApplicationController
   
-  before_action :set_student, only: [:show, :edit, :update, :destroy]
+  before_action :process_initial_essay, only: [:show, :edit, :update, :destroy]
   
   
   def index
@@ -59,12 +59,12 @@ class StudentsController < ApplicationController
   private
   
   
-  def student_params
+  def set_params
     #code
     params.require(:student).permit(:source_id, :name, :essay)
   end
   
-  def set_student
+  def process_initial_essay
       @student = Student.find(params[:id])
       
     # Initialize a hash with a default of 0
@@ -92,6 +92,18 @@ class StudentsController < ApplicationController
     
     # Break the essay into five parts
     full_section = words.each_slice(GROUP_SIZE).to_a
+    
+    # Create CSV headers
+    # Populate it with the classifiers
+    csv_headers = %w(the of at i)
+    
+    # Create a file with a path and unique name
+    #path = "app/views/csv_files/" + @student.name.to_s + ".csv"
+    #my_csv_file = File.open(path, "w+")
+    
+    @csv = CSV.open(Rails.root.join('app','models','csv_files', @student.name.to_s + ".csv").to_s, "wb") do |csv|
+      csv << csv_headers
+    end
     
     
     # Loop to assign sections and get their sizes
@@ -122,6 +134,7 @@ class StudentsController < ApplicationController
   
   def relativeFrequency(word)
     @countedWords[word] / @wordCount.to_f
+    # count(word) / @wordCount.to_f
   end
   
   # set group size to be 90
