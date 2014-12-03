@@ -75,6 +75,7 @@ GEM
       i18n (~> 0.5)
     ffi (1.9.6)
     formatador (0.2.5)
+    graphr (0.2.1)
     guard (2.7.0)
       formatador (>= 0.2.4)
       listen (~> 2.7)
@@ -140,6 +141,7 @@ GEM
       thor (>= 0.18.1, < 2.0)
     raindrops (0.13.0)
     rake (10.3.2)
+    rarff (0.2.2)
     rb-fsevent (0.9.4)
     rb-inotify (0.9.5)
       ffi (>= 0.5.0)
@@ -147,6 +149,7 @@ GEM
       json (~> 1.4)
     responders (1.1.1)
       railties (>= 3.2, < 4.2)
+    rjb (1.5.1)
     rspec (3.1.0)
       rspec-core (~> 3.1.0)
       rspec-expectations (~> 3.1.0)
@@ -224,12 +227,15 @@ DEPENDENCIES
   devise
   factory_girl_rails
   faker
+  graphr (~> 0.2.1)
   guard-rspec
   jbuilder (~> 2.0)
   jquery-rails
   jquery-turbolinks
   pg
   rails (= 4.1.4)
+  rarff (~> 0.2.2)
+  rjb (~> 1.5.1)
   rspec-rails
   sass-rails (~> 4.0.3)
   sdoc (~> 0.4.0)

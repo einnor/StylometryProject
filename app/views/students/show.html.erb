@@ -10,19 +10,18 @@
       Created on : <%= @student.created_at.strftime("%d/%m/%Y at %I:%M%p")%><br />
       Size : <%= @wordCount %> <br />
       Number of Sections : <%= @number_of_groups %> <br />
+      Attributes : <%= @attributes %> <br />
       
-      <% 1.upto(@number_of_groups) do |x| %>
-        Size of section <%= x %> : <%= @section_length[x - 1] %> <br />
-      <% end %>
-      
-      Headers : <%= @csv_headers %> <br />
+      <%= @dtreeString %>
 
-      Essay :
-      <p>
-        <%= @essay_file %>
-      </p>
       
-      Hash : <%= @countedWords %> <br />
+
+      
+      <%= image_tag("graphs/#{@classname}.gif")%> <br />
+      
+      
+      
+      
       
       <%= link_to "Edit", edit_student_path %> |
       <%= link_to "Delete", "#" %>

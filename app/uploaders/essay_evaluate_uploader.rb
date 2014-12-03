@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-class EssayUploader < CarrierWave::Uploader::Base
+class EssayEvaluateUploader < CarrierWave::Uploader::Base
 
   # Include RMagick or MiniMagick support:
   # include CarrierWave::RMagick
@@ -42,7 +42,6 @@ class EssayUploader < CarrierWave::Uploader::Base
   #   %w(jpg jpeg gif png)
   # end
   
-  # For documents you might use something like this:
   def extension_white_list
     %w(pdf rtf doc docx txt)
   end

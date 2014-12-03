@@ -37,12 +37,20 @@ gem 'spring',        group: :development
   # Devise gem to Authenticate Users
 gem 'devise'
 
+# Ruby Java Bridge
+gem 'rjb', '~> 1.5.1'
+
 
 # Use decision tree for machine learning
 gem 'decisiontree', '~> 0.5.0'
 
+gem 'graphr', '~> 0.2.1'
+
 # Use AI4R for artificial intelligence operations
 gem 'ai4r', '~> 1.13'
+
+# Gem for handling WEKA arff files
+gem 'rarff', '~> 0.2.2'
 
 
 gem 'annotate', '~> 2.6.5'

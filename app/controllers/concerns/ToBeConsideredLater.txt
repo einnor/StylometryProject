@@ -1,0 +1,62 @@
+#@attributes = @attributes.insert(-1, 'class')
+    #
+    #code for weka goes here
+    #Load Java Jar
+    #dir = "./weka.jar"
+    #
+    ##Have Rjb load the jar file, and pass Java command line arguments
+    #Rjb::load(dir, jvmargs=["-Xmx1000M"])
+    #
+    ##make id3 classifier (C4.5)
+    #obj = Rjb::import("weka.classifiers.trees.J48")
+    #dtree = obj.new
+    #
+    ## Conver the data to ARFF
+    #rel = Rarff::Relation.new("#{@student.name.to_s}_relation")
+    #
+    #rel.instances = @training
+    #
+    #fastVector = Rjb::import('weka.core.FastVector')
+    #attribute = Rjb::import('weka.core.Attribute')
+    #classAttributeVector = fastVector.new()
+    #classifiers = %w(questionnable unquestionnable)
+    #
+    #0.upto(classifiers.size - 1) {|x|
+    #  classAttributeVector.addElement(classifiers[x])
+    #}
+    #rel.attributes[-1].name = attribute.new("class", classAttributeVector)
+    #
+    #0.upto(@attributes.size - 2) {|i|
+    #  rel.attributes[i].name = @attributes[i]
+    #}
+    #
+    #
+    #
+    #    
+    #    
+    #my_arff = rel.to_arff
+    #
+    ## Save the ARFF string in a .arff file
+    #File.open(Rails.root.join('app','models','arff_files', @student.name.to_s + ".arff").to_s, "wb") do |f|
+    #  f.puts my_arff
+    #end
+    #
+    #    
+    ##load the data using Java, Rails and Weka   
+    #my_arff_source = Rjb::import("java.io.FileReader").new(Rails.root.join('app','models','arff_files', @student.name.to_s + ".arff").to_s)
+    #my_arff_data = Rjb::import("weka.core.Instances").new(my_arff_source)
+    #
+    ## set the class attribute, here it’s the last value
+    #my_arff_data.setClassIndex(my_arff_data.numAttributes() - 1)
+    #
+    ##Build the classifier
+    #dtree.buildClassifier(my_arff_data)
+    #@dtreeString = dtree.toString
+    
+    ### Examine the particular datapoints
+    ##points = my_arff_data.numInstances
+    ##points.times {|instance|
+    ##  theclass = dtree.classifyInstance(my_arff_data.instance(instance))
+    ##  point = my_arff_data.instance(instance).toString
+    ##  puts "#{point} \t #{theclass}"
+    ##}
