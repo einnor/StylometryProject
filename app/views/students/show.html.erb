@@ -6,27 +6,23 @@
   <div class="col-md-6 skin-white">
 
       Name : <%= @student.name %> <br />
+      ID : <%= @student.id %>
       Source : <%= @student.source.name %> <br />
       Created on : <%= @student.created_at.strftime("%d/%m/%Y at %I:%M%p")%><br />
-      Size : <%= @wordCount %> <br />
+      Size of essay : <%= @wordCount %> <br />
       Number of Sections : <%= @number_of_groups %> <br />
-      Attributes : <%= @attributes %> <br />
       
-      <%= link_to "Train Model", trainModel_students_path %>
-      
-      <%= link_to "Evaluate", evaluateModel_students_path %>
-      
-      <%= @dtreeString %>
-
-      
-
-      
+       <br />
       <%= image_tag("gifs/#{@classname}.gif")%> <br />
+      <%= @dtreeString %> <br />
       
+      Total test instances : <%= @totalTestInstances %> <br />
+      Correctly classified : <%= @correct %> <br />
+      Wrongly classified : <%= @wrong %> <br />
+      Percentage : <%= @percentage %>% probability that it was written by ......<br />
+
       
-      
-      
-      
+      <%= link_to "Train and Evaluate", evaluateModel_students_path %> |
       <%= link_to "Edit", edit_student_path %> |
       <%= link_to "Delete", "#" %>
       <hr>

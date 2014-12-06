@@ -12,6 +12,14 @@ class StudentsController < ApplicationController
   end
 
   def show
+    @dtreeString = session[:dtreeString]
+    @classname = session[:classname]
+    @wordCount = session[:wordCount]
+    @number_of_groups = session[:numberOfGroups]
+    @correct = session[:correctlyClassified]
+    @wrong = session[:wronglyClassified]
+    @percentage = session[:percentage]
+    @totalTestInstances = session[:totalTestInstances]
   end
 
   def create
@@ -95,8 +103,7 @@ class StudentsController < ApplicationController
     @classname = fanfics_data.classAttribute.toString.split(' ')[1]
     graph = $TREE.graph.gsub(/Decision Tree {/, "Decision Tree {\n#{@classname}")
     File.open(Rails.root.join('app','assets','images','dots', @classname + '.dot').to_s,'w') { |f| f.write(graph) }
-    "dot -Tgif < #{Rails.root.join('app','assets','images','dots', @classname + '.dot').to_s} > #{Rails.root.join('app','assets','images','gifs', @classname + '.gif').to_s}"
-    
+    `dot -Tgif < /home/ronnie/Rails/StylometryProject/app/assets/images/dots/#{@classname}.dot > /home/ronnie/Rails/StylometryProject/app/assets/images/gifs/#{@classname}.gif`    
     
     puts "Generated tree for #{@classname}"
     
@@ -141,28 +148,41 @@ class StudentsController < ApplicationController
     puts "Generate tree"
     
     $TREE = Rjb::import("weka.classifiers.trees.J48").new
-    #$TREE.setOptions '-B 10 -E -3'.split(' ')
     fanfics_data.setClassIndex(fanfics_data.numAttributes() - 1)
     $TREE.buildClassifier(fanfics_data)
-    
-    print $TREE
     
     @dtreeString = $TREE.toString
     puts @dtreeString
     
+    session[:dtreeString] = @dtreeString
+    
     # Write out to a dot file
     @classname = fanfics_data.classAttribute.toString.split(' ')[1]
+    
+    session[:classname] = @classname
+    
     graph = $TREE.graph.gsub(/Decision Tree {/, "Decision Tree {\n#{@classname}")
     File.open(Rails.root.join('app','assets','images','dots', @classname + '.dot').to_s,'w') { |f| f.write(graph) }
-    "dot -Tgif < #{Rails.root.join('app','assets','images','dots', @classname + '.dot').to_s} > #{Rails.root.join('app','assets','images','gifs', @classname + '.gif').to_s}"
+    `dot -Tgif < /home/ronnie/Rails/StylometryProject/app/assets/images/dots/#{@classname}.dot > /home/ronnie/Rails/StylometryProject/app/assets/images/gifs/#{@classname}.gif`
     
     
     puts "Generated tree for #{@classname}"
     
-    fanfics_data.numInstances.times do |instance|
+    preds_train = Array.new
+    points_train = fanfics_data.numInstances
+    points_train.times do |instance|
       pred = $TREE.classifyInstance(fanfics_data.instance(instance))
-      puts pred
+      point = fanfics_data.instance(instance).toString
+      point = point.split(",")
+      preds_train << pred
+      puts "#{point} : #{pred}"
     end
+    
+    preds_train = preds_train.to_s.gsub("]","")
+    preds_train = preds_train.to_s.gsub("[","")
+    preds_train = preds_train.to_s.gsub(" ","")
+    preds_train = preds_train.split(",")
+    puts modeAndFrequency(preds_train)
     
     puts "Finished classifying these points"
     puts "*********************************************"
@@ -188,10 +208,34 @@ class StudentsController < ApplicationController
     
     test_data.setClassIndex(test_data.numAttributes() - 1)
     
-    test_data.numInstances.times do |instance|
+    preds_test = Array.new
+    points_test = test_data.numInstances
+    points_test.times do |instance|
       pred = $TREE.classifyInstance(test_data.instance(instance))
-      puts pred
+      point = test_data.instance(instance).toString
+      point = point.split(",")
+      preds_test << pred
+      puts "#{point} : #{pred}"
     end
+    
+    preds_test = preds_test.to_s.gsub("]","")
+    preds_test = preds_test.to_s.gsub("[","")
+    preds_test = preds_test.to_s.gsub(" ","")
+    preds_test = preds_test.split(",")
+    
+    session[:totalTestInstances] = preds_test.size
+
+    mAF = modeAndFrequency(preds_test)
+    puts mAF
+    
+    # Calculate percentage
+    @correct = mAF.last
+    @wrong = preds_test.size - @correct
+    @percentage = (100 * @correct.to_f / preds_test.size).round(4)
+    
+    session[:correctlyClassified] = @correct
+    session[:wronglyClassified] = @wrong
+    session[:percentage] = @percentage
     
     puts "Does this printout?"
     
@@ -207,6 +251,23 @@ class StudentsController < ApplicationController
   
   def set_student
     @student = Student.find(params[:id])
+  end
+  
+  # Returns an array with two elements.
+  # The first element is the mode
+  # The second element is the frquency of the mode
+  def modeAndFrequency(array)
+    counter = Hash.new(0)
+    array.each {|i| counter[i] += 1}
+    mode_array = []
+    counter.each do |k,v|
+      if v == counter.values.max
+        mode_array << k
+      end
+    end
+    v = counter[mode_array[0]]
+    mode_array << v
+    mode_array
   end
   
   def loadEnvironment
@@ -240,11 +301,15 @@ class StudentsController < ApplicationController
     # Count the number of words in the essay  
     @wordCount = words.size
     
+    session[:wordCount] = @wordCount
+    
     # Divide the essay into groups
     full_section = words.each_slice(GROUP_SIZE).to_a
     
     # Number of groups
     @number_of_groups = (@wordCount / GROUP_SIZE).ceil
+    
+    session[:numberOfGroups] = @number_of_groups
     
     # Read classifiers from the classifier csv file
     file = (File.read(Rails.root.join('app','models','concerns','stopwords.txt').to_s))
