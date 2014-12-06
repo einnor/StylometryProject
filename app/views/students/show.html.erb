@@ -12,12 +12,16 @@
       Number of Sections : <%= @number_of_groups %> <br />
       Attributes : <%= @attributes %> <br />
       
+      <%= link_to "Train Model", trainModel_students_path %>
+      
+      <%= link_to "Evaluate", evaluateModel_students_path %>
+      
       <%= @dtreeString %>
 
       
 
       
-      <%= image_tag("graphs/#{@classname}.gif")%> <br />
+      <%= image_tag("gifs/#{@classname}.gif")%> <br />
       
       
       

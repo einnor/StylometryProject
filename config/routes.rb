@@ -1,7 +1,12 @@
 Rails.application.routes.draw do
   
   resources :sources
-  resources :students
+  resources :students do
+    collection do
+      get :trainModel
+      get :evaluateModel
+    end
+  end
 
 
   get 'pages/home'
