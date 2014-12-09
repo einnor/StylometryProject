@@ -33,6 +33,11 @@ GEM
       rake (>= 0.8.7)
     arel (5.0.1.20140414130214)
     bcrypt (3.1.9)
+    better_errors (1.0.1)
+      coderay (>= 1.0.0)
+      erubis (>= 2.6.6)
+    binding_of_caller (0.7.2)
+      debug_inspector (>= 0.0.1)
     builder (3.2.2)
     capybara (2.4.4)
       mime-types (>= 1.16)
@@ -55,6 +60,7 @@ GEM
       coffee-script-source
       execjs
     coffee-script-source (1.8.0)
+    debug_inspector (0.0.2)
     decisiontree (0.5.0)
     devise (3.4.0)
       bcrypt (~> 3.0)
@@ -220,6 +226,8 @@ PLATFORMS
 DEPENDENCIES
   ai4r (~> 1.13)
   annotate (~> 2.6.5)
+  better_errors
+  binding_of_caller
   capybara
   carrierwave (~> 0.10.0)
   coffee-rails (~> 4.0.0)

@@ -1,11 +1,12 @@
 Rails.application.routes.draw do
-  
+
   resources :sources
   resources :students do
     collection do
-      get :trainModel
       get :evaluateModel
     end
+    
+    resources :tests
   end
 
 

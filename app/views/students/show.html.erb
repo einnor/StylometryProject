@@ -19,12 +19,12 @@
       Total test instances : <%= @totalTestInstances %> <br />
       Correctly classified : <%= @correct %> <br />
       Wrongly classified : <%= @wrong %> <br />
-      Percentage : <%= @percentage %>% probability that it was written by ......<br />
-
+      Percentage : <%= @percentage %>% probability that it was written by <%= @name %><br />
       
+      <%= link_to "Enter an esay to evaluate", new_student_test_path(@student) %> | 
       <%= link_to "Train and Evaluate", evaluateModel_students_path %> |
-      <%= link_to "Edit", edit_student_path %> |
-      <%= link_to "Delete", "#" %>
+      <%= link_to "Edit ", edit_student_path %> |
+      <%= link_to "Back to list of students", students_path %>
       <hr>
 
   </div>

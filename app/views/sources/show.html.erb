@@ -9,7 +9,7 @@
       Url : <%= @source.url %> <br />
       Created on : <%= @source.created_at.strftime("%d/%m/%Y at %I:%M%p")%><br />
       <%= link_to "Edit", edit_source_path %> |
-      <%= link_to "Delete", source, method: :delete, data: { confirm: 'Are you sure?' } %>
+      <%= link_to "Delete", @source, method: :delete, data: { confirm: 'Are you sure?' } %>
       <hr>
 
   </div>

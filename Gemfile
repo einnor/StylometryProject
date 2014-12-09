@@ -57,6 +57,10 @@ gem 'annotate', '~> 2.6.5'
 
 gem 'carrierwave', '~> 0.10.0'
 
+gem 'better_errors'
+
+gem 'binding_of_caller'
+
 
 # Use PostgreSQL Database
 group :production do

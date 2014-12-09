@@ -4,15 +4,17 @@ class StudentsController < ApplicationController
   
   def index
     @students = Student.all
+    set_sessions_to_nil()
   end
 
   def new
     @source_options = Source.all.map{|s| [s.name, s.id]}
     @student = Student.new
+    set_sessions_to_nil()
   end
 
   def show
-    @dtreeString = session[:dtreeString]
+    #@dtreeString = session[:dtreeString]
     @classname = session[:classname]
     @wordCount = session[:wordCount]
     @number_of_groups = session[:numberOfGroups]
@@ -20,6 +22,8 @@ class StudentsController < ApplicationController
     @wrong = session[:wronglyClassified]
     @percentage = session[:percentage]
     @totalTestInstances = session[:totalTestInstances]
+    @name = session[:name]
+    
   end
 
   def create
@@ -29,7 +33,9 @@ class StudentsController < ApplicationController
       if @student.save
         format.html{redirect_to @student, notice: 'Student was successfully created.'}
         format.json{render :show, status: :created, location: @student}
-        process_initial_essay()
+        my_file = @student.essay
+        path_to_save_csv = Rails.root.join('app','models','csv_files', "MainDataSet.csv").to_s
+        process_initial_essay(my_file, path_to_save_csv)
       else
         format.html{render :new}
         format.json{render json: @student.errors, status: :unprocessable_entity}
@@ -39,6 +45,7 @@ class StudentsController < ApplicationController
   
   def edit
     @source_options = Source.all.map{|s| [s.name, s.id]}
+    set_sessions_to_nil
   end
 
   def update
@@ -53,6 +60,7 @@ class StudentsController < ApplicationController
         format.json{render json: @student.errors, status: :unprocessable_entity}
       end
     end
+    set_sessions_to_nil()
   end
   
   def destroy
@@ -63,63 +71,6 @@ class StudentsController < ApplicationController
       format.json{head :no_content}
     end
   end
-  
-  def trainModel
-    loadEnvironment()
-    
-    # Path to the dataset
-    path = Rails.root.join('app','models','csv_files',"MainDataSet.csv").to_s
-    
-    fanfics_src = Rjb::import("java.io.File").new(path)
-    fanfics_csvloader = Rjb::import("weka.core.converters.CSVLoader").new
-    fanfics_csvloader.setFile(fanfics_src)
-    fanfics_data = fanfics_csvloader.getDataSet
-    
-    # NominalToString
-    nts = Rjb::import("weka.filters.unsupervised.attribute.NominalToString").new
-    nts.setOptions '-C last'.split(' ')
-    nts.setInputFormat(fanfics_data)
-    fanfics_data = Rjb::import("weka.filters.Filter").useFilter(fanfics_data, nts)
-    
-    # NumericToNominal
-    ntn = Rjb::import("weka.filters.unsupervised.attribute.NumericToNominal").new
-    ntn.setInputFormat(fanfics_data)
-    fanfics_data = Rjb::import("weka.filters.Filter").useFilter(fanfics_data, ntn)
-    
-    # Generate a classifier for the last index
-    puts "Generate tree"
-    
-    $TREE = Rjb::import("weka.classifiers.trees.J48").new
-    #$TREE.setOptions '-B 10 -E -3'.split(' ')
-    fanfics_data.setClassIndex(fanfics_data.numAttributes() - 1)
-    $TREE.buildClassifier(fanfics_data)
-    
-    print $TREE
-    
-    @dtreeString = $TREE.toString
-    puts @dtreeString
-    
-    # Write out to a dot file
-    @classname = fanfics_data.classAttribute.toString.split(' ')[1]
-    graph = $TREE.graph.gsub(/Decision Tree {/, "Decision Tree {\n#{@classname}")
-    File.open(Rails.root.join('app','assets','images','dots', @classname + '.dot').to_s,'w') { |f| f.write(graph) }
-    `dot -Tgif < /home/ronnie/Rails/StylometryProject/app/assets/images/dots/#{@classname}.dot > /home/ronnie/Rails/StylometryProject/app/assets/images/gifs/#{@classname}.gif`    
-    
-    puts "Generated tree for #{@classname}"
-    
-    fanfics_data.numInstances.times do |instance|
-      pred = $TREE.classifyInstance(fanfics_data.instance(instance))
-      puts pred
-    end
-    
-    puts "Finished classifying these points"
-    puts "*********************************************"
-    
-      
-    redirect_to request.referer
-    
-  end
-  
   
   def evaluateModel
     
@@ -154,10 +105,11 @@ class StudentsController < ApplicationController
     @dtreeString = $TREE.toString
     puts @dtreeString
     
-    session[:dtreeString] = @dtreeString
+    #session[:dtreeString] = @dtreeString
     
     # Write out to a dot file
-    @classname = fanfics_data.classAttribute.toString.split(' ')[1]
+    @student_id = session[:student_id]
+    @classname = fanfics_data.classAttribute.toString.split(' ')[1] + @student_id.to_s
     
     session[:classname] = @classname
     
@@ -169,11 +121,13 @@ class StudentsController < ApplicationController
     puts "Generated tree for #{@classname}"
     
     preds_train = Array.new
+    points_train_array = Array.new
     points_train = fanfics_data.numInstances
     points_train.times do |instance|
       pred = $TREE.classifyInstance(fanfics_data.instance(instance))
       point = fanfics_data.instance(instance).toString
-      point = point.split(",")
+      point = point.split(",") << pred
+      points_train_array << point
       preds_train << pred
       puts "#{point} : #{pred}"
     end
@@ -184,7 +138,7 @@ class StudentsController < ApplicationController
     preds_train = preds_train.split(",")
     puts modeAndFrequency(preds_train)
     
-    puts "Finished classifying these points"
+    puts "Finished classifying train points"
     puts "*********************************************"
   
     # Follow same procedure for training
@@ -218,6 +172,8 @@ class StudentsController < ApplicationController
       puts "#{point} : #{pred}"
     end
     
+    puts "Finished classifying test points"
+    
     preds_test = preds_test.to_s.gsub("]","")
     preds_test = preds_test.to_s.gsub("[","")
     preds_test = preds_test.to_s.gsub(" ","")
@@ -227,6 +183,19 @@ class StudentsController < ApplicationController
 
     mAF = modeAndFrequency(preds_test)
     puts mAF
+    mode = mAF.first.to_i
+    
+    # Get the identity of the author/student
+    arrayForIDS = Array.new
+    0.upto(points_train_array.size - 1) {|i|
+      if mode == points_train_array[i].last
+        arrayForIDS << points_train_array[i][-2]
+      end
+    }
+    mAF2 = modeAndFrequency arrayForIDS
+    id_number = mAF2.first.to_i
+    @name = Student.find(id_number).name
+    session[:name] = @name
     
     # Calculate percentage
     @correct = mAF.last
@@ -246,11 +215,24 @@ class StudentsController < ApplicationController
   private
   
   def student_params
-    params.require(:student).permit(:source_id, :name, :essay, :essayEvaluate)
+    params.require(:student).permit(:source_id, :name, :essay)
   end
   
   def set_student
     @student = Student.find(params[:id])
+    session[:student_id] = @student.id
+  end
+  
+  def set_sessions_to_nil
+    session[:dtreeString] = nil
+    session[:classname] = nil
+    session[:wordCount] = nil
+    session[:numberOfGroups] = nil
+    session[:correctlyClassified] = nil
+    session[:wronglyClassified] = nil
+    session[:percentage] = nil
+    session[:totalTestInstances] = nil
+    session[:name] = nil
   end
   
   # Returns an array with two elements.
@@ -278,7 +260,7 @@ class StudentsController < ApplicationController
     Rjb::load(dir, jvmargs=["-Xmx1500m"])
   end
   
-  def process_initial_essay
+  def process_initial_essay(my_file, path_to_save_csv)
     
     # Initialize a hash with a default of 0
     @countedWords = Hash.new(0)
@@ -289,10 +271,9 @@ class StudentsController < ApplicationController
       
     # code to read the essay file and convert it to lowercase
     # Currently only works with .txt files
-    @file = @student
-    @essay_file = @file.essay.read.downcase
+    my_file = my_file.read.downcase
         
-    words = @essay_file.scan(/\w[\w']*/) #now catches contractions
+    words = my_file.scan(/\w[\w']*/) #now catches contractions
     #words = words.gsub("'","")
     
     # Count words (keys) and increment their value 
@@ -325,7 +306,7 @@ class StudentsController < ApplicationController
     }
     
     # Open MainDataSet a csv file and add the classifiers as headers
-    CSV.open(Rails.root.join('app','models','csv_files', "MainDataSet.csv").to_s, "a+") do |csv|
+    CSV.open(path_to_save_csv, "a+") do |csv|
       
       #csv << @csv_headers_modified
       

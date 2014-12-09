@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-class EssayEvaluateUploader < CarrierWave::Uploader::Base
+class EvaluateUploader < CarrierWave::Uploader::Base
 
   # Include RMagick or MiniMagick support:
   # include CarrierWave::RMagick
