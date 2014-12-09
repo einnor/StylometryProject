@@ -1,256 +1,117 @@
-#@attributes = @attributes.insert(-1, 'class')
-    #
-    #code for weka goes here
-    #Load Java Jar
-    #dir = "./weka.jar"
-    #
-    ##Have Rjb load the jar file, and pass Java command line arguments
-    #Rjb::load(dir, jvmargs=["-Xmx1000M"])
-    #
-    ##make id3 classifier (C4.5)
-    #obj = Rjb::import("weka.classifiers.trees.J48")
-    #dtree = obj.new
-    #
-    ## Conver the data to ARFF
-    #rel = Rarff::Relation.new("#{@student.name.to_s}_relation")
-    #
-    #rel.instances = @training
-    #
-    #fastVector = Rjb::import('weka.core.FastVector')
-    #attribute = Rjb::import('weka.core.Attribute')
-    #classAttributeVector = fastVector.new()
-    #classifiers = %w(questionnable unquestionnable)
-    #
-    #0.upto(classifiers.size - 1) {|x|
-    #  classAttributeVector.addElement(classifiers[x])
-    #}
-    #rel.attributes[-1].name = attribute.new("class", classAttributeVector)
-    #
-    #0.upto(@attributes.size - 2) {|i|
-    #  rel.attributes[i].name = @attributes[i]
-    #}
-    #
-    #
-    #
-    #    
-    #    
-    #my_arff = rel.to_arff
-    #
-    ## Save the ARFF string in a .arff file
-    #File.open(Rails.root.join('app','models','arff_files', @student.name.to_s + ".arff").to_s, "wb") do |f|
-    #  f.puts my_arff
-    #end
-    #
-    #    
-    ##load the data using Java, Rails and Weka   
-    #my_arff_source = Rjb::import("java.io.FileReader").new(Rails.root.join('app','models','arff_files', @student.name.to_s + ".arff").to_s)
-    #my_arff_data = Rjb::import("weka.core.Instances").new(my_arff_source)
-    #
-    ## set the class attribute, here it’s the last value
-    #my_arff_data.setClassIndex(my_arff_data.numAttributes() - 1)
-    #
-    ##Build the classifier
-    #dtree.buildClassifier(my_arff_data)
-    #@dtreeString = dtree.toString
+# Path to the dataset
+    path = Rails.root.join('app','models','csv_files',"MainDataSet.csv").to_s
     
-    ### Examine the particular datapoints
-    ##points = my_arff_data.numInstances
-    ##points.times {|instance|
-    ##  theclass = dtree.classifyInstance(my_arff_data.instance(instance))
-    ##  point = my_arff_data.instance(instance).toString
-    ##  puts "#{point} \t #{theclass}"
-    ##}
+    fanfics_src = Rjb::import("java.io.File").new(path)
+    fanfics_csvloader = Rjb::import("weka.core.converters.CSVLoader").new
+    fanfics_csvloader.setFile(fanfics_src)
+    fanfics_data = fanfics_csvloader.getDataSet
+    
+    # NumericToNominal
+    ntn = Rjb::import("weka.filters.unsupervised.attribute.NumericToNominal").new
+    ntn.setInputFormat(fanfics_data)
+    fanfics_data = Rjb::import("weka.filters.Filter").useFilter(fanfics_data, ntn)
+    
+    # Generate a classifier for the last index
+    puts "Generate tree"
+    
+    tree = Rjb::import("weka.classifiers.trees.J48").new
+    fanfics_data.setClassIndex(fanfics_data.numAttributes() - 1)
+    tree.buildClassifier(fanfics_data)
+    
+    @dtreeString = tree.toString
+    puts @dtreeString
+    
+    #session[:dtreeString] = @dtreeString
+    
+    # Write out to a dot file
+    @student_id = session[:student_id]
+    @classname = fanfics_data.classAttribute.toString.split(' ')[1] + @student_id.to_s
+    
+    session[:classname] = @classname
+    
+    graph = tree.graph.gsub(/Decision Tree {/, "Decision Tree {\n#{@classname}")
+    File.open(Rails.root.join('app','assets','images','dots', @classname + '.dot').to_s,'w') { |f| f.write(graph) }
+    `dot -Tgif < /home/ronnie/Rails/StylometryProject/app/assets/images/dots/#{@classname}.dot > /home/ronnie/Rails/StylometryProject/app/assets/images/gifs/#{@classname}.gif`
     
     
+    puts "Generated tree for #{@classname}"
     
+    preds_train = Array.new
+    points_train_array = Array.new
+    points_train = fanfics_data.numInstances
+    points_train.times do |instance|
+      pred = tree.classifyInstance(fanfics_data.instance(instance))
+      point = fanfics_data.instance(instance).toString
+      point = point.split(",") << pred
+      points_train_array << point
+      preds_train << pred
+      puts "#{point} : #{pred}"
+    end
     
+    preds_train = preds_train.to_s.gsub("]","")
+    preds_train = preds_train.to_s.gsub("[","")
+    preds_train = preds_train.to_s.gsub(" ","")
+    preds_train = preds_train.split(",")
+    puts modeAndFrequency(preds_train)
     
+    puts "Finished classifying train points"
+    puts "*********************************************"
+  
+    # Follow same procedure for training
+    #Load the test
+    path = Rails.root.join('app','models','csv_files',"test.csv").to_s
+    test_src = Rjb::import("java.io.File").new(path)
+    test_csvloader = Rjb::import("weka.core.converters.CSVLoader").new
+    test_csvloader.setFile(test_src)
+    test_data = test_csvloader.getDataSet
     
+    # NumericToNominal
+    ntn = Rjb::import("weka.filters.unsupervised.attribute.NumericToNominal").new
+    ntn.setInputFormat(test_data)
+    test_data = Rjb::import("weka.filters.Filter").useFilter(test_data, ntn)
     
+    test_data.setClassIndex(test_data.numAttributes() - 1)
     
+    preds_test = Array.new
+    points_test = test_data.numInstances
+    points_test.times do |instance|
+      pred = tree.classifyInstance(test_data.instance(instance))
+      point = test_data.instance(instance).toString
+      point = point.split(",")
+      preds_test << pred
+      puts "#{point} : #{pred}"
+    end
     
-    ##Load Java Jar
-      #dir = "./weka.jar"
-      #
-      ##Have Rjb load the jar file, and pass Java command line arguments
-      #Rjb::load(dir, jvmargs=["-Xmx1000M"])
-      #
-      #
-      #
-      ##load the data using Java and Weka
-      ##fanfics_src = Rjb::import("java.io.File").new(ARGV[0])
-      ##fanfics_src = Rjb::import("java.io.File").new(Rails.root.join('app','models','csv_files', @student.name.to_s + ".csv").to_s)
-      ##fanfics_src = Rjb::import("java.io.File").new(Rails.root.join('app','models','csv_files', @student.name.to_s + "_"+ @student.id.to_s + "_.csv").to_s)
-      #fanfics_src = Rjb::import("java.io.File").new("/home/ronnie/weka-3-7-11/data/breast-cancer.arff")
-      #
-      #
-      #fanfics_csvloader = Rjb::import("weka.core.converters.CSVLoader").new
-      #fanfics_csvloader.setFile(fanfics_src)
-      #fanfics_data = Rjb::import("weka.core.Instances").new(fanfics_csvloader.getDataSet)
-      #
-      ## NominalToString
-      #nts = Rjb::import("weka.filters.unsupervised.attribute.NominalToString").new
-      #nts.setOptions '-C last'.split(' ')
-      #nts.setInputFormat(fanfics_data)
-      #fanfics_data = Rjb::import("weka.filters.Filter").useFilter(fanfics_data, nts)
-      #
-      ## Stemmer
-      #nullstemmer = Rjb::import("weka.core.stemmers.NullStemmer").new
-      #
-      ## Tokenizer
-      #wordtokenizer = Rjb::import("weka.core.tokenizers.WordTokenizer").new
-      #wordtokenizer.setOptions ["-delimiters", "\" \\r\\n\\t.,;:\\\'\\\"()?!\""]
-      #
-      ## StringToWordVector
-      #stwv = Rjb::import("weka.filters.unsupervised.attribute.StringToWordVector").new
-      #stwv.setOptions '-R first-last -W 1000 -prune-rate -1.0 -N 0 -L -M 3 -stopwords /home/ronnie/Rails/ruby-weka/stopwords.txt"'.split(' ')
-      #stwv.setStemmer nullstemmer
-      #stwv.setTokenizer wordtokenizer
-      #stwv.setInputFormat(fanfics_data)
-      #fanfics_data = Rjb::import("weka.filters.Filter").useFilter(fanfics_data, stwv)
-      #
-      ## NumericToNominal
-      #ntn = Rjb::import("weka.filters.unsupervised.attribute.NumericToNominal").new
-      #ntn.setInputFormat(fanfics_data)
-      #fanfics_data = Rjb::import("weka.filters.Filter").useFilter(fanfics_data, ntn)
-      #
-      #
-      #
-      #
-      #  
-      #
-      #
-      #
-      ## Generate a classifier for each index
-      #puts "Generating trees"
-      #(0..fanfics_data.numAttributes - 1).each do |i|
-      #  
-      #  #make id3 classifier (C4.5)
-      #  obj = Rjb::import("weka.classifiers.trees.J48")
-      #  dtree = obj.new
-      #  #dtree.setOptions '-B 10 -E -3'.split(' ')
-      #  fanfics_data.setClassIndex(i)
-      #  dtree.buildClassifier fanfics_data
-      #  @dtreeString = dtree.toString
-      #  
-      #  
-      #  # Write out to a dot file
-      #  classname = "dot_file" #fanfics_data.classAttribute.toString.split(' ')[1]
-      #  graph = dtree.graph.gsub(/digraph DTree {/, "digraph DTree {\n#{classname}")
-      #  File.open(Rails.root.join('app','models','dots', classname.to_s + ".dot").to_s, 'w') { |f| f.write(graph) }
-      #  `dot -Tgif < /home/ronnie/Rails/StylometryProject/app/models/dots/#{classname}.dot > /home/ronnie/Rails/StylometryProject/app/models/gifs/#{classname}.gif`
-      #  
-      #  puts "Generated tree for #{classname}"
-      #
-      #  ## ADTree
-      #  #adtree = Rjb::import("weka.classifiers.trees.ADTree").new
-      #  #adtree.setOptions '-B 10 -E -3'.split(' ')
-      #  #fanfics_data.setClassIndex(i)
-      #  #adtree.buildClassifier fanfics_data
-      #  
-      #  ## Write out to a dot file
-      #  #classname = fanfics_data.classAttribute.toString.split(' ')[1]
-      #  #graph = adtree.graph.gsub(/digraph ADTree {/, "digraph ADTree {\n#{classname}")
-      #  #File.open('dots/'+classname+'.dot', 'w') { |f| f.write(graph) }
-      #  #`dot -Tgif < dots/#{classname}.dot > gifs/#{classname}.gif`
-      #  #
-      #  #puts "Generated tree for #{classname}"
-      #  
-      #  # Examine the particular datapoints
-      #  points = fanfics_data.numInstances
-      #  points.times {|instance|
-      #    theclass = dtree.classifyInstance(fanfics_data.instance(instance))
-      #    point = fanfics_data.instance(instance).toString
-      #    puts "#{point} \t #{theclass}"
-      #  }
-      #end
-      #
-      #
-      ##
-      ### Attribute Selection
-      ##attsel = Rjb::import('weka.attributeSelection.AttributeSelection').new
-      ##
-      ### Attribute Evaluator
-      ###cfssubseteval = Rjb::import('weka.attributeSelection.CfsSubsetEval').new
-      ##lsa = Rjb::import('weka.attributeSelection.LatentSemanticAnalysis').new
-      ##lsa.setOptions '-R 0.95 -A 1000'.split(' ')
-      ##
-      ### Search Method
-      ###greedysearch = Rjb::import('weka.attributeSelection.GreedyStepwise').new
-      ###greedysearch.setOptions '-T -1.7976931348623157E308 -N -1'.split(' ')
-      ###greedysearch.setSearchBackwards true
-      ##ranker = Rjb::import('weka.attributeSelection.Ranker').new
-      ##ranker.setOptions '-T -1.7976931348623157E308 -N -1'.split(' ')
-      ##
-      ### Run 'em
-      ###attsel.setEvaluator(cfssubseteval)
-      ##attsel.setEvaluator(lsa)
-      ###attsel.setSearch(greedysearch)
-      ##attsel.setSearch(ranker)
-      ###attsel.SelectAttributes(fanfics_data)
-      ##attsel.SelectAttributes(fanfics_data)
-      ##
-      ##fanfics_data = attsel.reduceDimensionality(fanfics_data)
-      ##topics = fanfics_data.toString.scan(/^@.*/)
-      ##topics[1..-1].each_with_index do |topic, i|
-      ##  words = topic.gsub(/^@attribute '/,'').gsub(/ numeric$/,'').gsub('+','').scan(/(-?[0-9\.]+)([^-0-9\.]+)/).collect{|a,b| [a.to_f, b]}.sort{|a,b| b[0]<=>a[0]}
-      ##  print "Topic ##{i}:   "
-      ##  words[0..5].each {|w| print "#{w[1]} "}
-      ##  puts ''
-      ##end
-      ###selected_attributes.each do |i|
-      ###  puts fanfics_data.attribute(i).name
-      ###end
-      
-      
-      
-      
-      
-      
-      
-      
-      This is how Evaluation is done in Java
-      
-      System.out.println(adt.toString());
-		
-		Evaluation train_eval = new Evaluation(train_data);
-		train_eval.evaluateModel(adt, train_data);
-		System.out.println(train_eval.toSummaryString("\nTrain Results\n===============\n", false));
-	
-		Evaluation test_eval = new Evaluation(train_data);
-		test_eval.evaluateModel(adt, test_data);
-		System.out.println(test_eval.toSummaryString("\nTest Results\n================\n", false));
-                
-                
-                
-                
-                
-                
-                TO DO
+    puts "Finished classifying test points"
+    
+    preds_test = preds_test.to_s.gsub("]","")
+    preds_test = preds_test.to_s.gsub("[","")
+    preds_test = preds_test.to_s.gsub(" ","")
+    preds_test = preds_test.split(",")
+    
+    session[:totalTestInstances] = preds_test.size
 
-how to interpret the tree and the points
-
-get video tutorial on how to do a test and interpret it
-
-classification according to authors.
-
-function to add authors
-
-
-how to output the trained model and the tree
-
-output the results
-
-
-
-
-TRY RUBY WEKA_WRAPPER
-
-
-
-
-
-
-
-
-
+    mAF = modeAndFrequency(preds_test)
+    puts mAF
+    mode = mAF.first.to_i
+    
+    # Get the identity of the author/student
+    arrayForIDS = Array.new
+    0.upto(points_train_array.size - 1) {|i|
+      if mode == points_train_array[i].last
+        arrayForIDS << points_train_array[i][-2]
+      end
+    }
+    mAF2 = modeAndFrequency arrayForIDS
+    id_number = mAF2.first.to_i
+    @name = Student.find(id_number).name
+    session[:name] = @name
+    
+    # Calculate percentage
+    @correct = mAF.last
+    @wrong = preds_test.size - @correct
+    @percentage = (100 * @correct.to_f / preds_test.size).round(4)
+    
+    session[:correctlyClassified] = @correct
+    session[:wronglyClassified] = @wrong
+    session[:percentage] = @percentage

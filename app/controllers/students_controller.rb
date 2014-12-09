@@ -76,47 +76,62 @@ class StudentsController < ApplicationController
     
     loadEnvironment()
     
-    # Path to the dataset
-    path = Rails.root.join('app','models','csv_files',"MainDataSet.csv").to_s
     
+    #load the data using Java and Weka
+    path = Rails.root.join('app','models','csv_files',"MainDataSet.csv").to_s
     fanfics_src = Rjb::import("java.io.File").new(path)
     fanfics_csvloader = Rjb::import("weka.core.converters.CSVLoader").new
     fanfics_csvloader.setFile(fanfics_src)
     fanfics_data = fanfics_csvloader.getDataSet
     
-    # NominalToString
-    nts = Rjb::import("weka.filters.unsupervised.attribute.NominalToString").new
-    nts.setOptions '-C last'.split(' ')
-    nts.setInputFormat(fanfics_data)
-    fanfics_data = Rjb::import("weka.filters.Filter").useFilter(fanfics_data, nts)
+    
+    # Testing data is input same way as testing data
+    # Show path. Load via CSVLoader, setFile and getDataSet
+    
+    path = Rails.root.join('app','models','csv_files',"test.csv").to_s
+    test_src = Rjb::import("java.io.File").new(path)
+    test_csvloader = Rjb::import("weka.core.converters.CSVLoader").new
+    test_csvloader.setFile(test_src)
+    test_data = test_csvloader.getDataSet
     
     # NumericToNominal
     ntn = Rjb::import("weka.filters.unsupervised.attribute.NumericToNominal").new
     ntn.setInputFormat(fanfics_data)
+    ntn.setInputFormat(test_data)
     fanfics_data = Rjb::import("weka.filters.Filter").useFilter(fanfics_data, ntn)
+    test_data = Rjb::import("weka.filters.Filter").useFilter(test_data, ntn)
     
     # Generate a classifier for the last index
     puts "Generate tree"
     
-    $TREE = Rjb::import("weka.classifiers.trees.J48").new
+    tree = Rjb::import("weka.classifiers.trees.J48").new
+    #tree = Rjb::import("weka.classifiers.trees.Tree").new
+    
     fanfics_data.setClassIndex(fanfics_data.numAttributes() - 1)
-    $TREE.buildClassifier(fanfics_data)
+    test_data.setClassIndex(test_data.numAttributes() - 1)
+    tree.buildClassifier fanfics_data
     
-    @dtreeString = $TREE.toString
+    puts "serialize model"
+    sh = Rjb::import("weka.core.SerializationHelper")
+    sh.write("/tmp/weka.model", tree);
+    
+    puts "deserialize model"
+    sh = Rjb::import("weka.core.SerializationHelper")
+    tree = sh.read("/tmp/weka.model");
+    
+    
+    @dtreeString = tree.toString
     puts @dtreeString
-    
-    #session[:dtreeString] = @dtreeString
-    
+      
     # Write out to a dot file
     @student_id = session[:student_id]
     @classname = fanfics_data.classAttribute.toString.split(' ')[1] + @student_id.to_s
     
     session[:classname] = @classname
     
-    graph = $TREE.graph.gsub(/Decision Tree {/, "Decision Tree {\n#{@classname}")
+    graph = tree.graph.gsub(/Decision Tree {/, "Decision Tree {\n#{@classname}")
     File.open(Rails.root.join('app','assets','images','dots', @classname + '.dot').to_s,'w') { |f| f.write(graph) }
     `dot -Tgif < /home/ronnie/Rails/StylometryProject/app/assets/images/dots/#{@classname}.dot > /home/ronnie/Rails/StylometryProject/app/assets/images/gifs/#{@classname}.gif`
-    
     
     puts "Generated tree for #{@classname}"
     
@@ -124,7 +139,7 @@ class StudentsController < ApplicationController
     points_train_array = Array.new
     points_train = fanfics_data.numInstances
     points_train.times do |instance|
-      pred = $TREE.classifyInstance(fanfics_data.instance(instance))
+      pred = tree.classifyInstance(fanfics_data.instance(instance))
       point = fanfics_data.instance(instance).toString
       point = point.split(",") << pred
       points_train_array << point
@@ -139,49 +154,29 @@ class StudentsController < ApplicationController
     puts modeAndFrequency(preds_train)
     
     puts "Finished classifying train points"
-    puts "*********************************************"
-  
-    # Follow same procedure for training
-    #Load the test
-    path = Rails.root.join('app','models','csv_files',"test.csv").to_s
-    test_src = Rjb::import("java.io.File").new(path)
-    test_csvloader = Rjb::import("weka.core.converters.CSVLoader").new
-    test_csvloader.setFile(test_src)
-    test_data = test_csvloader.getDataSet
     
-    # NominalToString
-    nts = Rjb::import("weka.filters.unsupervised.attribute.NominalToString").new
-    nts.setOptions '-C last'.split(' ')
-    nts.setInputFormat(test_data)
-    test_data = Rjb::import("weka.filters.Filter").useFilter(test_data, nts)
     
-    # NumericToNominal
-    ntn = Rjb::import("weka.filters.unsupervised.attribute.NumericToNominal").new
-    ntn.setInputFormat(test_data)
-    test_data = Rjb::import("weka.filters.Filter").useFilter(test_data, ntn)
+    puts "*******************************************"
     
-    test_data.setClassIndex(test_data.numAttributes() - 1)
-    
-    preds_test = Array.new
-    points_test = test_data.numInstances
-    points_test.times do |instance|
-      pred = $TREE.classifyInstance(test_data.instance(instance))
-      point = test_data.instance(instance).toString
-      point = point.split(",")
-      preds_test << pred
-      puts "#{point} : #{pred}"
+    preds_array = Array.new
+    test_data.numInstances.times do |instance|
+            pred = tree.classifyInstance(test_data.instance(instance))
+            preds_array << pred
+            puts "#{pred}"
     end
     
-    puts "Finished classifying test points"
+    puts "Finished prediction"
     
-    preds_test = preds_test.to_s.gsub("]","")
-    preds_test = preds_test.to_s.gsub("[","")
-    preds_test = preds_test.to_s.gsub(" ","")
-    preds_test = preds_test.split(",")
+    puts preds_array
     
-    session[:totalTestInstances] = preds_test.size
+    preds_array = preds_array.to_s.gsub("]","")
+    preds_array = preds_array.to_s.gsub("[","")
+    preds_array = preds_array.to_s.gsub(" ","")
+    preds_array = preds_array.split(",")
+    
+    session[:totalTestInstances] = preds_array.size
 
-    mAF = modeAndFrequency(preds_test)
+    mAF = modeAndFrequency(preds_array)
     puts mAF
     mode = mAF.first.to_i
     
@@ -199,12 +194,13 @@ class StudentsController < ApplicationController
     
     # Calculate percentage
     @correct = mAF.last
-    @wrong = preds_test.size - @correct
-    @percentage = (100 * @correct.to_f / preds_test.size).round(4)
+    @wrong = preds_array.size - @correct
+    @percentage = (100 * @correct.to_f / preds_array.size).round(4)
     
     session[:correctlyClassified] = @correct
     session[:wronglyClassified] = @wrong
     session[:percentage] = @percentage
+    
     
     puts "Does this printout?"
     
