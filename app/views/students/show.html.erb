@@ -50,13 +50,13 @@
         Number of Sections : <%= @number_of_groups %> <br />
         
          <br />
-        <%= image_tag("gifs/#{@classname}.gif")%> <br />
+        <%= image_tag("gifs/#{@classname}.gif", :class=>"img-responsive", :alt => "Generated Decision Tree")%> <br />
         <%= @dtreeString %> <br />
         
         Total test instances : <%= @totalTestInstances %> <br />
         Correctly classified : <%= @correct %> <br />
         Wrongly classified : <%= @wrong %> <br />
-        Percentage : <%= @percentage %>% probability that it was written by <%= @name %><br />
+        Percentage : <%= @percentage %>% probability that it was written by <%= @names[@student.id - 1] %><br />
         
       <% else %>
         <!--What to display before beginning of evaluation-->
@@ -67,6 +67,24 @@
   </div>
   
   <div class="col-md-3 skin-white">
-    
+    <% if @startedEvaluation == 1 %>
+      
+      <% if @percentage >= 75.0 %>
+        <h2 id="good"><%= @percentage %>%</h2>
+      <%elsif @percentage >= 50.0 %>
+        <h2 id="warning"><%= @percentage %>%</h2>
+      <% else %>
+        <h2 id="bad"><%= @percentage %>%</h2>
+      <% end %>
+      
+      
+      
+      <% 0.upto(@names.length - 1) do |i| %>
+        <%= @names[i] %> : <%= @percentages[i] %>% <br>
+      <% end %>
+      
+    <% else %>
+      
+    <% end %>
   </div>
 </div>

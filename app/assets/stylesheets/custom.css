@@ -88,3 +88,30 @@
   
 }
 
+h2#good {
+  font-size: 36px;
+  padding: 24px 0;
+  color: #006633;
+  font-weight: bold;
+  margin-top: 0px;
+  margin-bottom: 3px;
+}
+
+h2#bad {
+  font-size: 36px;
+  padding: 24px 0;
+  color: #CC0000;
+  font-weight: bold;
+  margin-top: 0px;
+  margin-bottom: 3px;
+}
+
+h2#warning {
+  font-size: 36px;
+  padding: 24px 0;
+  color: #FF6600;
+  font-weight: bold;
+  margin-top: 0px;
+  margin-bottom: 3px;
+}
+

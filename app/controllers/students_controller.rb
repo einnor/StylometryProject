@@ -21,9 +21,13 @@ class StudentsController < ApplicationController
     @number_of_groups = session[:numberOfGroups]
     @correct = session[:correctlyClassified]
     @wrong = session[:wronglyClassified]
+    @percentages = Array.new
+    @percentages = session[:percentages]
     @percentage = session[:percentage]
     @totalTestInstances = session[:totalTestInstances]
-    @name = session[:name]
+    @names = Array.new
+    @names = session[:name]
+    @id = session[:student_id]
     
     @startedEvaluation = session[:startedEvaluation]
     
@@ -157,7 +161,7 @@ class StudentsController < ApplicationController
     preds_train = preds_train.to_s.gsub("[","")
     preds_train = preds_train.to_s.gsub(" ","")
     preds_train = preds_train.split(",")
-    puts modeAndFrequency(preds_train)
+    #puts hash_function(preds_train)
     
     puts "Finished classifying train points"
     
@@ -182,24 +186,54 @@ class StudentsController < ApplicationController
     
     session[:totalTestInstances] = preds_array.size
 
-    mAF = modeAndFrequency(preds_array)
-    puts mAF
-    mode = mAF.first.to_i
+    hash1 = hash_function(preds_array)
+    puts "Hash 1 : #{hash1}"
     
-    # Get the identity of the author/student
+    # Populate an array with the id number of the students/authors
     arrayForIDS = Array.new
-    0.upto(points_train_array.size - 1) {|i|
-      if mode == points_train_array[i].last
-        arrayForIDS << points_train_array[i][-2]
-      end
+    0.upto(hash1.size - 1) {|j|
+      0.upto(points_train_array.size - 1) {|i|
+        if hash1.keys[j].to_i == points_train_array[i].last
+          if arrayForIDS.include? points_train_array[i][-2]
+            # Do nothing
+          else
+            arrayForIDS << points_train_array[i][-2]
+          end 
+        end
+      }
     }
-    mAF2 = modeAndFrequency arrayForIDS
-    id_number = mAF2.first.to_i
-    @name = Student.find(id_number).name
+    
+    # Create hash with key as student id and value as frequency
+    idFreq = Hash.new(0)
+    keys = arrayForIDS
+    0.upto(arrayForIDS.size - 1){|i|
+      idFreq[keys[i]] = hash1.values[i]  
+    }
+    
+    puts "Array for IDS : #{arrayForIDS}"
+    puts "ID Frequency : #{idFreq}"
+    
+    id_number = Array.new
+    @name = Array.new
+    
+    corrects = Array.new
+    @percentages = Array.new
+    0.upto(idFreq.length - 1){|i|
+      id_number[i] = idFreq.keys[i].to_i
+      @name[i] = Student.find(id_number[i]).name.to_s
+      corrects[i] = idFreq[keys[i]]
+      puts corrects[i]
+      @percentages[i] = (100 * corrects[i].to_f / preds_array.size.to_f).round(4)
+    }
+    
     session[:name] = @name
+    session[:percentages] = @percentages
+
+
     
     # Calculate percentage
-    @correct = mAF.last
+    studentid = session[:student_id].to_i - 1
+    @correct = idFreq[keys[studentid]].to_i
     @wrong = preds_array.size - @correct
     @percentage = (100 * @correct.to_f / preds_array.size).round(4)
     
@@ -235,24 +269,26 @@ class StudentsController < ApplicationController
     session[:percentage] = nil
     session[:totalTestInstances] = nil
     session[:name] = nil
-    session[:startedEvaluation?] = nil
+    session[:startedEvaluation] = nil
+    session[:percentages] = nil
   end
   
   # Returns an array with two elements.
   # The first element is the mode
   # The second element is the frquency of the mode
-  def modeAndFrequency(array)
+  def hash_function(array)
     counter = Hash.new(0)
     array.each {|i| counter[i] += 1}
-    mode_array = []
-    counter.each do |k,v|
-      if v == counter.values.max
-        mode_array << k
-      end
-    end
-    v = counter[mode_array[0]]
-    mode_array << v
-    mode_array
+    #mode_array = []
+    #counter.each do |k,v|
+    #  if v == counter.values.max
+    #    mode_array << k
+    #  end
+    #end
+    #v = counter[mode_array[0]]
+    #mode_array << v
+    #mode_array
+    counter
   end
   
   def loadEnvironment
