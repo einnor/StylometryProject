@@ -1,30 +1,67 @@
 <div class="row">
   <div class="col-md-3 skin-white">
     
+    <div class="span2">  
+      <ul class="nav nav-pills nav-stacked">
+        <li class="active">
+          <%= link_to "Steps to Follow", "#" %>
+        </li>
+        <li>
+          <%= link_to "1. Enter Essay to Evaluate", new_student_test_path(@student) %>
+        </li>
+        <li>
+          <%= link_to "2. Train and Evaluate", evaluateModel_students_path %>
+        </li>
+      </ul>  
+    </div>
+    
+    
+    <div class="span2">  
+      <ul class="nav nav-pills nav-stacked">
+        <li class="active">
+          <%= link_to "Other Menu Options", "#" %>
+        </li>
+        <li>
+          <%= link_to "Edit Student", edit_student_path %>
+        </li>
+        <li>
+          <%= link_to "Back Home", students_path %>
+        </li>
+        <li>
+          <%= link_to "Delete Student", "#" %>
+        </li>
+        
+      </ul>  
+    </div> 
+    
   </div>
   
   <div class="col-md-6 skin-white">
 
       Name : <%= @student.name %> <br />
-      ID : <%= @student.id %>
+      ID : <%= @student.id %> <br />
       Source : <%= @student.source.name %> <br />
       Created on : <%= @student.created_at.strftime("%d/%m/%Y at %I:%M%p")%><br />
-      Size of essay : <%= @wordCount %> <br />
-      Number of Sections : <%= @number_of_groups %> <br />
-      
-       <br />
-      <%= image_tag("gifs/#{@classname}.gif")%> <br />
-      <%= @dtreeString %> <br />
-      
-      Total test instances : <%= @totalTestInstances %> <br />
-      Correctly classified : <%= @correct %> <br />
-      Wrongly classified : <%= @wrong %> <br />
-      Percentage : <%= @percentage %>% probability that it was written by <%= @name %><br />
-      
-      <%= link_to "Enter an esay to evaluate", new_student_test_path(@student) %> | 
-      <%= link_to "Train and Evaluate", evaluateModel_students_path %> |
-      <%= link_to "Edit ", edit_student_path %> |
-      <%= link_to "Back to list of students", students_path %>
+
+        
+      <% if @startedEvaluation == 1 %>
+        <!--What to display after evaluation-->
+        Size of essay : <%= @wordCount %> <br />
+        Number of Sections : <%= @number_of_groups %> <br />
+        
+         <br />
+        <%= image_tag("gifs/#{@classname}.gif")%> <br />
+        <%= @dtreeString %> <br />
+        
+        Total test instances : <%= @totalTestInstances %> <br />
+        Correctly classified : <%= @correct %> <br />
+        Wrongly classified : <%= @wrong %> <br />
+        Percentage : <%= @percentage %>% probability that it was written by <%= @name %><br />
+        
+      <% else %>
+        <!--What to display before beginning of evaluation-->
+        
+      <% end %>
       <hr>
 
   </div>

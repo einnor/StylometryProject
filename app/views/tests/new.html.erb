@@ -1,4 +1,10 @@
-<%= form_for([@student, @test], :html => {:multipart => true}) do |f| %>
+<div class="row">
+    <div class="col-md-3 skin-white">
+        
+    </div>
+   
+   <div class="col-md-6 skin-white">
+        <%= bootstrap_form_for([@student, @test], :html => {:multipart => true}) do |f| %>
       
         <% if @test.errors.any? %>
           <div id="error_explanation">
@@ -13,11 +19,21 @@
           </div>  
         <% end %>
         
-        <div class="field"><%= f.label :evaluate_to_be_evaluated %> <br />
-          <%= f.file_field :evaluate %>
+        <div class="field">
+          <%= f.file_field :evaluate %> (Select the essay to be evaluated)
         </div>
         
         <div class="actions">
           <%= f.submit "Submit", :class=>"btn btn-primary" %>
         </div>
       <% end %>
+    </div>
+   
+   <div class="col-md-3 skin-white">
+        
+    </div>
+    
+</div>
+
+
+

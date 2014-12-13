@@ -1,5 +1,6 @@
 class TestsController < ApplicationController
   
+  before_filter  :authenticate_admin!
   before_action :load_student
   
   def index

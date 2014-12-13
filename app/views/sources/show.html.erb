@@ -1,6 +1,28 @@
 <div class="row">
   <div class="col-md-3 skin-white">
-    
+    <% if admin_signed_in? %>
+  
+  
+      <div class="span2">  
+        <ul class="nav nav-pills nav-stacked">  
+          <li>
+            <%= link_to "Home", root_url %>
+          </li>
+          <li class="active">
+            <%= link_to "Register Source", new_source_path %>
+          </li>
+          <li>
+            <%= link_to "Register Student", new_student_path %>
+          </li>
+          <li>
+            <%= link_to "View Sources", sources_path %>
+          </li>
+          <li>
+            <%= link_to "Perform an Evaluation", students_path %>
+          </li>  
+        </ul>  
+      </div> 
+    <% end %>
   </div>
   
   <div class="col-md-6 skin-white">

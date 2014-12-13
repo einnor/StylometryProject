@@ -1,5 +1,6 @@
 class StudentsController < ApplicationController
   
+  before_filter  :authenticate_admin!
   before_action :set_student, only: [:show, :edit, :update, :destroy]
   
   def index
@@ -23,6 +24,8 @@ class StudentsController < ApplicationController
     @percentage = session[:percentage]
     @totalTestInstances = session[:totalTestInstances]
     @name = session[:name]
+    
+    @startedEvaluation = session[:startedEvaluation]
     
   end
 
@@ -73,6 +76,9 @@ class StudentsController < ApplicationController
   end
   
   def evaluateModel
+    
+    @startedEvaluation = 1
+    session[:startedEvaluation] = @startedEvaluation
     
     loadEnvironment()
     
@@ -229,6 +235,7 @@ class StudentsController < ApplicationController
     session[:percentage] = nil
     session[:totalTestInstances] = nil
     session[:name] = nil
+    session[:startedEvaluation?] = nil
   end
   
   # Returns an array with two elements.
@@ -278,7 +285,7 @@ class StudentsController < ApplicationController
     # Count the number of words in the essay  
     @wordCount = words.size
     
-    session[:wordCount] = @wordCount
+    #session[:wordCount] = @wordCount
     
     # Divide the essay into groups
     full_section = words.each_slice(GROUP_SIZE).to_a
@@ -286,7 +293,7 @@ class StudentsController < ApplicationController
     # Number of groups
     @number_of_groups = (@wordCount / GROUP_SIZE).ceil
     
-    session[:numberOfGroups] = @number_of_groups
+    #session[:numberOfGroups] = @number_of_groups
     
     # Read classifiers from the classifier csv file
     file = (File.read(Rails.root.join('app','models','concerns','stopwords.txt').to_s))

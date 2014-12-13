@@ -15,12 +15,11 @@
             <%= link_to "Register Student", new_student_path %>
           </li>
           <li>
-            <%= link_to "View Students", students_path %>
-          </li>
-          <li>
             <%= link_to "View Sources", sources_path %>
           </li>
-          <li><a href="#">. . . . .</a></li>   
+          <li>
+            <%= link_to "Perform an Evaluation", students_path %>
+          </li>  
         </ul>  
       </div> 
     <% end %>
@@ -29,7 +28,7 @@
   <div class="col-md-6 skin-white">
     <div class="header">New Student</div>
     
-    <%= form_for(@student, :html => {:multipart => true}) do |f| %>
+    <%= bootstrap_form_for(@student, :html => {:multipart => true}) do |f| %>
     
     <% if @student.errors.any? %>
       <div id="error_explanation">
@@ -46,15 +45,15 @@
     
     <div class="body">
       
-      <div class="field"><%= f.label :name %><br />
+      <div class="field">
         <%= f.text_field :name, autofocus: true %>
       </div>
     
-      <div class="field"><%= f.label :source %> <br />
+      <div class="field">
         <%= f.select(:source_id, @source_options) %>
       </div>
       
-      <div class="field"><%= f.label :essay %> <br />
+      <div class="field">
         <%= f.file_field :essay %>
       </div>
       

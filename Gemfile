@@ -61,6 +61,8 @@ gem 'better_errors'
 
 gem 'binding_of_caller'
 
+gem 'bootstrap_form'
+
 
 # Use PostgreSQL Database
 group :production do

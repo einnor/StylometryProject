@@ -1,5 +1,6 @@
 class SourcesController < ApplicationController
-  
+
+  before_filter  :authenticate_admin!  
   before_action :set_source, only: [:show, :edit, :update, :destroy]
   
   def index
