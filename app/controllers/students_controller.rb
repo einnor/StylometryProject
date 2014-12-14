@@ -168,6 +168,7 @@ class StudentsController < ApplicationController
     
     puts "*******************************************"
     
+    
     preds_array = Array.new
     test_data.numInstances.times do |instance|
             pred = tree.classifyInstance(test_data.instance(instance))
@@ -196,7 +197,7 @@ class StudentsController < ApplicationController
         if hash1.keys[j].to_i == points_train_array[i].last
           if arrayForIDS.include? points_train_array[i][-2]
             # Do nothing
-          else
+          elsif points_train_array[i][-2].to_i <= Student.all.count
             arrayForIDS << points_train_array[i][-2]
           end 
         end
@@ -220,8 +221,12 @@ class StudentsController < ApplicationController
     @percentages = Array.new
     0.upto(idFreq.length - 1){|i|
       id_number[i] = idFreq.keys[i].to_i
+      puts id_number[i]
       @name[i] = Student.find(id_number[i]).name.to_s
       corrects[i] = idFreq[keys[i]]
+      if corrects[i].nil?
+        corrects[i] = 0.0
+      end
       puts corrects[i]
       @percentages[i] = (100 * corrects[i].to_f / preds_array.size.to_f).round(4)
     }
@@ -232,8 +237,8 @@ class StudentsController < ApplicationController
 
     
     # Calculate percentage
-    studentid = session[:student_id].to_i - 1
-    @correct = idFreq[keys[studentid]].to_i
+    studentid = session[:student_id].to_s
+    @correct = idFreq[studentid].to_i
     @wrong = preds_array.size - @correct
     @percentage = (100 * @correct.to_f / preds_array.size).round(4)
     
