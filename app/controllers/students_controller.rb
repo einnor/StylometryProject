@@ -62,6 +62,9 @@ class StudentsController < ApplicationController
         #code
         format.html{redirect_to @student, notice: 'Student was successfully updated.'}
         format.json{render :show, status: :created, location: @student}
+        my_file = @student.essay
+        path_to_save_csv = Rails.root.join('app','models','csv_files', "MainDataSet.csv").to_s
+        process_initial_essay(my_file, path_to_save_csv)
       else
         format.html{render :new}
         format.json{render json: @student.errors, status: :unprocessable_entity}
@@ -89,10 +92,10 @@ class StudentsController < ApplicationController
     
     #load the data using Java and Weka
     path = Rails.root.join('app','models','csv_files',"MainDataSet.csv").to_s
-    fanfics_src = Rjb::import("java.io.File").new(path)
-    fanfics_csvloader = Rjb::import("weka.core.converters.CSVLoader").new
-    fanfics_csvloader.setFile(fanfics_src)
-    fanfics_data = fanfics_csvloader.getDataSet
+    train_src = Rjb::import("java.io.File").new(path)
+    train_csvloader = Rjb::import("weka.core.converters.CSVLoader").new
+    train_csvloader.setFile(train_src)
+    train_data = train_csvloader.getDataSet
     
     
     # Testing data is input same way as testing data
@@ -106,9 +109,9 @@ class StudentsController < ApplicationController
     
     # NumericToNominal
     ntn = Rjb::import("weka.filters.unsupervised.attribute.NumericToNominal").new
-    ntn.setInputFormat(fanfics_data)
+    ntn.setInputFormat(train_data)
     ntn.setInputFormat(test_data)
-    fanfics_data = Rjb::import("weka.filters.Filter").useFilter(fanfics_data, ntn)
+    train_data = Rjb::import("weka.filters.Filter").useFilter(train_data, ntn)
     test_data = Rjb::import("weka.filters.Filter").useFilter(test_data, ntn)
     
     # Generate a classifier for the last index
@@ -117,9 +120,9 @@ class StudentsController < ApplicationController
     tree = Rjb::import("weka.classifiers.trees.J48").new
     #tree = Rjb::import("weka.classifiers.trees.Tree").new
     
-    fanfics_data.setClassIndex(fanfics_data.numAttributes() - 1)
+    train_data.setClassIndex(train_data.numAttributes() - 1)
     test_data.setClassIndex(test_data.numAttributes() - 1)
-    tree.buildClassifier fanfics_data
+    tree.buildClassifier train_data
     
     puts "serialize model"
     sh = Rjb::import("weka.core.SerializationHelper")
@@ -135,7 +138,7 @@ class StudentsController < ApplicationController
       
     # Write out to a dot file
     @student_id = session[:student_id]
-    @classname = fanfics_data.classAttribute.toString.split(' ')[1] + @student_id.to_s
+    @classname = train_data.classAttribute.toString.split(' ')[1] + @student_id.to_s
     
     session[:classname] = @classname
     
@@ -147,10 +150,10 @@ class StudentsController < ApplicationController
     
     preds_train = Array.new
     points_train_array = Array.new
-    points_train = fanfics_data.numInstances
+    points_train = train_data.numInstances
     points_train.times do |instance|
-      pred = tree.classifyInstance(fanfics_data.instance(instance))
-      point = fanfics_data.instance(instance).toString
+      pred = tree.classifyInstance(train_data.instance(instance))
+      point = train_data.instance(instance).toString
       point = point.split(",") << pred
       points_train_array << point
       preds_train << pred

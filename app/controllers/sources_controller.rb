@@ -59,9 +59,9 @@ class SourcesController < ApplicationController
   private
   
   # Use callbacks to share common setup or constraints between actions.
-    def set_source
-      @source = Source.find(params[:id])
-    end
+  def set_source
+    @source = Source.find(params[:id])
+  end
   
   def source_params
     #code
