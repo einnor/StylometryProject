@@ -38,7 +38,7 @@ gem 'spring',        group: :development
 gem 'devise'
 
 # Ruby Java Bridge
-gem 'rjb', '~> 1.5.1'
+gem 'rjb', '~> 1.6.1'
 
 
 # Use decision tree for machine learning
