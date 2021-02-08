@@ -156,7 +156,7 @@ GEM
       json (~> 1.4)
     responders (1.1.1)
       railties (>= 3.2, < 4.2)
-    rjb (1.5.1)
+    rjb (1.6.4)
     rspec (3.1.0)
       rspec-core (~> 3.1.0)
       rspec-expectations (~> 3.1.0)
@@ -245,7 +245,7 @@ DEPENDENCIES
   pg
   rails (= 4.1.4)
   rarff (~> 0.2.2)
-  rjb (~> 1.5.1)
+  rjb (~> 1.6.4)
   rspec-rails
   sass-rails (~> 4.0.3)
   sdoc (~> 0.4.0)
