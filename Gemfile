@@ -55,7 +55,7 @@ gem 'rarff', '~> 0.2.2'
 
 gem 'annotate', '~> 2.6.5'
 
-gem 'carrierwave', '~> 0.10.0'
+gem 'carrierwave', '~> 1.3.2'
 
 gem 'better_errors'
 
